@@ -1,35 +1,27 @@
 import sqlite3
 import json
 import re
-from sqlalchemy import create_engine, Column, String,Integer
+from sqlalchemy import create_engine, Column, String,Integer,inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
-from jinja2 import Template
+from alembic import command
+from alembic.config import Config
+from generated_model import MyModel
 
-def create_model(class_name, table_name, fields):
-    Base = declarative_base()
-
-    class DynamicModel(Base):
-        __tablename__ = table_name
-
-        __table_args__ = {'extend_existing': True}
-        id = Column(Integer, primary_key=True, autoincrement=True)
-        for field, data_type in fields.items():
-            locals()[field] = Column(String)
-
-    DynamicModel.__name__ = class_name
-
-    return DynamicModel
-
-
-
-def insert_data(data, Contact):
+def insert_data(data):
     try:
+        alembic_cfg = Config("alembic.ini")
+        command.upgrade(alembic_cfg, "head")
+        print(MyModel.__table__.columns.keys())
         engine = create_engine('sqlite:///new.db')
         Session = sessionmaker(bind=engine)
+        inspector = inspect(engine)
+        print(inspector.get_table_names())
+        if 'mymodel' not in inspector.get_table_names():
+            MyModel.__table__.create(bind=engine)
         session = Session()
-        contact = Contact(**data)
+        contact = MyModel(**data)
         session.add(contact)
         session.commit()
         session.close()
@@ -43,7 +35,7 @@ def get_contact():
     conn = sqlite3.connect('new.db')
     cursor = conn.cursor()
     
-    cursor.execute('''SELECT * FROM contacts''')
+    cursor.execute('''SELECT * FROM mymodel''')
     contacts = cursor.fetchall()
     
     conn.close()
@@ -51,7 +43,6 @@ def get_contact():
     return contacts
 
 def sanitize_input(data):
-    print(type(data))
     sanitized_data = {}
     for key, value in data.items():
         if isinstance(value, dict):
