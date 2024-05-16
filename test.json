@@ -1,7 +1,0 @@
-{
-    "fields" : {
-      "contact_number" : "string",
-      "name" : "string",
-      "age" : "integer"
-    }
-}
