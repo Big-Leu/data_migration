@@ -1,0 +1,39 @@
+# Ignore new.db file
+new.db
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/testform/node_modules
+/testform/.pnp
+/testform/.pnp.js
+/testform/.yarn/install-state.gz
+
+# testing
+/testform/coverage
+
+# next.js
+/testform/.next/
+/testform/out/
+
+# production
+/testform/build
+
+# misc
+/testform/.DS_Store
+/testform/*.pem
+
+# debug
+/testform/npm-debug.log*
+/testform/yarn-debug.log*
+/testform/yarn-error.log*
+
+# local env files
+/testform/.env*.local
+
+# vercel
+/testform/.vercel
+
+# typescript
+/testform/*.tsbuildinfo
+/testform/next-env.d.ts

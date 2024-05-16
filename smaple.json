@@ -1,0 +1,17 @@
+
+{
+    "contacts": [
+        {
+            "name": "abhi123",
+            "contact_number": "1234567890",
+            "email_address": "john123@example.com",
+            "organization": "Example Inc."
+        },
+        {
+            "name": "abhi3",
+            "contact_number": "9876543210",
+            "email_address": "jane1@example.com",
+            "organization": "Sample Corp."
+        }
+    ]
+}
