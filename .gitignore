@@ -2,4 +2,4 @@
 new.db
 
 # Ignore node_modules directory
-/frontend/testform/node_modules    
+/testform/node_modules    
