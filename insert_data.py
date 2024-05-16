@@ -1,28 +1,24 @@
 import sqlite3
 import json
 import re
-from sqlalchemy import create_engine, Column, String,Integer,inspect
+from sqlalchemy import create_engine,inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
-from alembic import command
-from alembic.config import Config
+from sqlalchemy import insert
 from generated_model import MyModel
 
 def insert_data(data):
     try:
-        alembic_cfg = Config("alembic.ini")
-        command.upgrade(alembic_cfg, "head")
         print(MyModel.__table__.columns.keys())
-        engine = create_engine('sqlite:///new.db')
+        engine = create_engine('sqlite:///new.db',echo=True)
         Session = sessionmaker(bind=engine)
         inspector = inspect(engine)
         print(inspector.get_table_names())
         if 'mymodel' not in inspector.get_table_names():
             MyModel.__table__.create(bind=engine)
         session = Session()
-        contact = MyModel(**data)
-        session.add(contact)
+        session.execute(insert(MyModel),data)
         session.commit()
         session.close()
         print("success")
