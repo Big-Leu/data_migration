@@ -1,5 +1,0 @@
-# Ignore new.db file
-new.db
-
-# Ignore node_modules directory
-/testform/node_modules    
