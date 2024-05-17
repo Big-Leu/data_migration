@@ -10,6 +10,7 @@ const Showdata: NextPage = () => {
     try {
       const response = await fetch("http://127.0.0.1:8000/api/v1/form/detail");
       const data = await response.json();
+      console.log(data)
       setResponseData(data); 
       setShowTable(true);
     } catch (error) {
@@ -17,20 +18,20 @@ const Showdata: NextPage = () => {
     }
   };
 
-  const generateTable = (data: any[][]) => {
+  const generateTable = (data: any[]) => {
     return (
-      <table className="w-full border-collapse border border-gray-400 mt-[5rem]" >
+      <table className="w-full border-collapse border border-gray-400 mt-[5rem]">
         <thead className="bg-gray-200">
           <tr>
-            {data[0].map((header, index) => (
+            {data.length > 0 && Object.keys(data[0]).map((header, index) => (
               <th key={index} className="px-4 py-2">{header}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {data.slice(1).map((rowData, index) => (
+          {data.map((rowData, index) => (
             <tr key={index}>
-              {rowData.map((cellData, cellIndex) => (
+              {Object.values(rowData).map((cellData, cellIndex) => (
                 <td key={cellIndex} className="border px-4 py-2">{cellData}</td>
               ))}
             </tr>
@@ -38,7 +39,8 @@ const Showdata: NextPage = () => {
         </tbody>
       </table>
     );
-  };
+  }
+  
 
   return (
     <div className="flex flex-col items-center mt-8">

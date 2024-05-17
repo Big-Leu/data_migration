@@ -1,8 +1,21 @@
-from typing import Union
-from insert_data import insert_data,get_contact,validate_input,sanitize_input
-from fastapi import FastAPI,Request
+from typing import List, Dict
+from insert_data import validate_input,sanitize_input
+from fastapi import FastAPI,Request,HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import create_engine
+from generated_model import MyModel
+from sqlalchemy.orm import Session
+from sqlalchemy import insert,update,delete
+from sqlalchemy.orm import class_mapper
+from sqlalchemy.exc import SQLAlchemyError
+
+
+import json
+def serialize(model_instance):
+    """Transforms a model instance into a dictionary."""
+    columns = [c.key for c in class_mapper(model_instance.__class__).columns]
+    return {c: getattr(model_instance, c) for c in columns}
 app = FastAPI()
 
 app.add_middleware(
@@ -12,6 +25,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+engine = create_engine("sqlite:///new.db")
+session = Session(bind=engine)
 
 @app.post("/api/v1/form/contact")
 async def read_root(request: Request):
@@ -26,10 +41,54 @@ async def read_root(request: Request):
             print("returned from validate_input")
             return JSONResponse({"message": "INVALID"}, status_code=400)
         
-        insert_data(sanitized_data)
-        
+        try:
+            session.execute(insert(MyModel), data)
+            session.commit()
+            return JSONResponse({"message": "Ok"}, status_code=200)
+        except SQLAlchemyError as e:
+            session.rollback()
+            return JSONResponse({"message": "An error occurred: " + str(e)}, status_code=400)
+        finally:
+            session.close()
+@app.post("/api/v1/form/delete")
+async def delete_item(request: Request):
+    data = await request.json()
+    try:
+        stmt = (
+            delete(MyModel).
+            where(MyModel.id == data['id'])
+        )
+        session.execute(stmt)
+        session.commit()
         return JSONResponse({"message": "Ok"}, status_code=200)
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail="An error occurred: " + str(e))
+    finally:
+        session.close()
 
-@app.get("/api/v1/form/detail")
+@app.post("/api/v1/form/update")
+async def update_item(request: Request):
+    data = await request.json()
+    try:
+        stmt = (
+            update(MyModel).
+            where(MyModel.id == data['id']).
+            values(**data)
+        )
+        session.execute(stmt)
+        session.commit()
+        return JSONResponse({"message": "Ok"}, status_code=200)
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail="An error occurred: " + str(e))
+    finally:
+        session.close()
+
+@app.get("/api/v1/form/detail", response_model=List[Dict])
 async def read_item():
-   return get_contact()
+    result = session.query(MyModel).all()
+    if not result:
+        raise HTTPException(status_code=404, detail="No items found")
+    data = [serialize(item) for item in result]
+    return data

@@ -14,5 +14,3 @@ class MyModel(Base):
     
     age = Column(Integer)
     
-    address = Column(String)
-    
