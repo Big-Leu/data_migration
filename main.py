@@ -9,13 +9,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import insert,update,delete
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.exc import SQLAlchemyError
-
-
 import json
+
 def serialize(model_instance):
-    """Transforms a model instance into a dictionary."""
     columns = [c.key for c in class_mapper(model_instance.__class__).columns]
     return {c: getattr(model_instance, c) for c in columns}
+
 app = FastAPI()
 
 app.add_middleware(
@@ -92,3 +91,4 @@ async def read_item():
         raise HTTPException(status_code=404, detail="No items found")
     data = [serialize(item) for item in result]
     return data
+
